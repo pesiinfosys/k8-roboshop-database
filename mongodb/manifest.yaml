@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+      tier: db 
+      project: roboshop # has to match .spec.template.metadata.labels
+  serviceName: "mongodb-headless-service"
+  replicas: 1 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: mongodb
+        tier: db 
+        project: roboshop # has to match .spec.selector.matchLabels
+    spec:
+      containers:
+      - name: mongodb
+        image: pesiinfosys/roboshopmongodb:v1.0.0
+        ports:
+        - containerPort: 27017
+          name: mongodb-port
+        volumeMounts:
+        - name: mongodbvolume
+          mountPath: /data/db
+  # this is PVC directly.
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodbvolume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "roboshop-ebs-dynamic-sc"
+      resources:
+        requests:
+          storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  clusterIP: None #headless
+  selector:
+    app: mongodb
+    tier: db 
+    project: roboshop # has to match .spec.selector.matchLabel 
+  ports:
+  - name: mongodb-service-port
+    protocol: TCP
+    port: 27017 # this port belongs to service
+    targetPort: mongodb-port # this port belongs to container
