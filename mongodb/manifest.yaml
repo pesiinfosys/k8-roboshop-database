@@ -9,7 +9,7 @@ spec:
       app: mongodb
       tier: db 
       project: roboshop # has to match .spec.template.metadata.labels
-  serviceName: "mongodb-headless-service"
+  serviceName: "mongodb"
   replicas: 1 # by default is 1
   template:
     metadata:
